@@ -19,7 +19,20 @@
 #define amount 5
 #define BUFF_SIZE 1024
 
+using namespace std;
+
+struct Stack my_stack;
+
 pthread_t thread_id[amount];
+pthread_mutex_t lock;
+
+int newfd[BACKLOG];
+
+void b(char *barak){
+    pthread_mutex_lock;
+    printf("tata..");
+    pthread_mutex_unlock;
+}
 
 // get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)
@@ -42,8 +55,43 @@ void *thread_func(void *new_fd){
     int nfd = *(int*)new_fd;
     char buff[BUFF_SIZE];
     bool connected = true;
+    int bytes;
     pthread_detach(pthread_self());
 
+    while(connected){
+        bytes = recv(nfd, buff, sizeof(buff), NULL);
+        if(bytes <= 0){
+            perror("recv");
+            connected = false;
+            pthread_exit(NULL);
+            break;
+        }
+        *(buff+bytes) = '\0';
+
+        pthread_mutex_lock(&lock);
+
+        if(strncmp(buff, "PUSH", 4)){
+            push(&my_stack, buff+3);
+        }
+
+        else if(strncmp(buff, "POP", 3)){
+            pop(&my_stack);
+        }
+
+        else if(strncmp(buff, "TOP", 3)){
+            top(my_stack);
+        }
+
+        else{
+            string bb = "did not suceed";
+            if(send(nfd, &bb, bb.size(), 0) == -1){
+                perror("send");
+            }
+        }
+        pthread_mutex_unlock(&lock);
+    }
+    printf("client side closed\n");
+    close(nfd);
 }
 
 int main(void){
@@ -103,4 +151,20 @@ int main(void){
     }
 
     printf("server: waiting for connections...\n");
+    unsigned int j = 0;
+
+    while(1){
+        sin_size = sizeof (their_addr);
+        newfd[j] = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size);;
+        if(newfd[j] == -1){
+            perror("accept");
+            continue;
+        }
+        inet_ntop(their_addr.ss_family, get_in_addr((struct sockaddr *)&their_addr), s, sizeof s);
+        printf("server: got connection from %s\n", s);
+
+        pthread_create(&thread_id[j%BACKLOG], NULL, thread_func, &newfd[j]);
+        j++;
+    }
+    return 0;
 }

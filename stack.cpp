@@ -1,18 +1,14 @@
 #include "stack.hpp"
-#include <stdbool.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 
 /**
  * @brief simple pop implemitation of stack
  * @param my_stack 
  * @return true if succed to pop
  */
-bool pop(struct Stack *my_stack){
+string pop(struct Stack *my_stack){
     if(my_stack->flag){
-        printf("The stack is empty..\n");
-        return false;
+        string er = "The stack is empty";
+        return er;
     }
 
     struct Node *curr = my_stack->p;
@@ -20,16 +16,18 @@ bool pop(struct Stack *my_stack){
     if(curr->prev == NULL){
         my_stack->p = NULL;
         my_stack->flag = true;
-        return true;
+        return curr->buff;
     }
+
     curr->prev->next = NULL;
     my_stack->p = my_stack->p->prev;
 }
 
-bool push(struct Stack *my_stack, char *input){
+bool push(struct Stack *my_stack, string input){
     struct Node *temp = (struct Node*)malloc(sizeof(struct Node));
     // copy the given input to the temp node
-    strcpy(temp->buff, input);
+    temp->buff = input;
+
     // if the stack is empty
     if(my_stack->flag){
         my_stack->p = temp;
@@ -43,12 +41,12 @@ bool push(struct Stack *my_stack, char *input){
     return true;
 }
 
-char *top(struct Stack my_stack){
+string top(struct Stack my_stack){
     if(my_stack.p){
         return my_stack.p->buff;
     }
     else{
-        char *empty = "nothing to show..";
+        string empty = "nothing to show..";
         return empty;
     }
 }

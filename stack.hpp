@@ -1,9 +1,16 @@
 #include <stdbool.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <string>
+
+using namespace std;
 
 struct Node{
     struct Node *next;
     struct Node *prev;
-    char buff[1024];
+    string buff;
 };
 
 struct Stack{
@@ -11,6 +18,6 @@ struct Stack{
     bool flag = false;
 };
 
-bool pop(struct Stack*);
-bool push(struct Stack*, char*);
-char *top(struct Stack);
+string pop(struct Stack*);
+bool push(struct Stack*, string);
+string top(struct Stack);
