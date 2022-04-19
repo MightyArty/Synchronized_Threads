@@ -1,45 +1,50 @@
-#include <string.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <netdb.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <iostream>
-#include <fstream>
-#include <strings.h>
-#include <stdlib.h>
-#include <string>
-#include <pthread.h>
-#define BUFFSIZE 1024
-
-#include <string>
-#ifdef _WIN32
-#include <Windows.h>
-#else
-#include <unistd.h>
-#endif
-// #include <bits/stdc++.h>
-#include <iostream>
-#include <cstdlib>
-#include <pthread.h>
-#include <stdio.h>
-#include <string.h>
-#include <thread>
-class Stack
+#include "server.hpp"
+#define em 5
+void red()
 {
-public:
-    char *data;
-    Stack *next;
-};
-pthread_mutex_t lock;
-Stack *my_stack;
-void *task1(void *);
+    printf("\033[1;31m");
+}
+void yellow()
+{
+    printf("\033[1;33m");
+}
+void reset()
+{
+    printf("\033[0m");
+}
+void free(Stack **root)
+{
+    while (*root)
+    {
+        Stack *temp = *root;
+        *root = (*root)->next;
+        free(temp->data);
+        delete temp;
+    }
+    std::cout << "free" << std::endl;
+}
+void sig_handler(int signum)
+{
+    free(my_stack);
+    switch (signum)
+    {
+    case SIGTSTP:
+        red();
+        printf("I'm the first signal..\n");
+    case SIGINT:
+        yellow();
+        printf("I'm the second signal, trying to divide\n");
+    default:
+
+        close(listenFd);
+        reset();
+        exit(1);
+    }
+}
 Stack *newNode(char *data)
 {
     Stack *stack = new Stack();
-    stack->data = data;
-    puts(stack->data);
+    stack->data = strcpy((char *)malloc(BUFFSIZE), data);
     stack->next = NULL;
     return stack;
 }
@@ -47,24 +52,23 @@ int isEmpty(Stack *root)
 {
     return !root;
 }
-char *pop(Stack **root)
+Stack *pop(Stack **root)
 {
     if (isEmpty(*root))
-        return (char *)"The stack is empty";
+    {
+        return NULL;
+    }
     pthread_mutex_lock(&lock);
-
     Stack *temp = *root;
     *root = (*root)->next;
-    char *popped = temp->data;
-    free(temp);
     pthread_mutex_unlock(&lock);
-
-    return popped;
+    size--;
+    return temp;
 }
 void push(Stack **root, char *data)
 {
     pthread_mutex_lock(&lock);
-    puts(data);
+    size++;
     Stack *Stack = newNode(data);
     Stack->next = *root;
     *root = Stack;
@@ -74,29 +78,25 @@ char *top(Stack *root)
 {
     char *s;
     if (isEmpty(root))
-        // s = (char *)"Empty";
-        return (char *)"The stack is empty";
-    else
-        // s = root->data;
-        return root->data;
-}
-int main(int argc, char *argv[])
-{
-    int pId, portNo, listenFd;
-    socklen_t len; // store size of the address
-    bool loop = false;
-    struct sockaddr_in svrAdd, clntAdd;
-
-    pthread_t threadA[3];
-
-    if (argc < 2)
     {
-        std::cerr << "Syntam : ./server <port>" << std::endl;
-        return 0;
+        return NULL;
     }
+    pthread_mutex_lock(&lock);
+    s = root->data;
+    pthread_mutex_unlock(&lock);
+    return s;
+}
+int server()
+{
 
-    portNo = atoi(argv[1]);
+    // if (argc < 2)
+    // {
+    //     std::cerr << "Syntam : ./server <port>" << std::endl;
+    //     return 0;
+    // }
 
+    // portNo = atoi(argv[1]);
+    portNo = htons(3006);
     if ((portNo > 65535) || (portNo < 2000))
     {
         std::cerr << "Please enter a port number between 2000 - 65535" << std::endl;
@@ -125,11 +125,28 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    listen(listenFd, 5);
+    if (listen(listenFd, 5) == -1)
+    {
+        printf("\n listen has failed\n");
+        return 0;
+    }
 
-    int noThread = 0;
+    if (pthread_mutex_init(&lock, NULL) != 0)
+    {
+        printf("\n mutex init has failed\n");
+        return 0;
+    }
 
-    while (noThread <= 3)
+    return 1;
+}
+int main(int argc, char *argv[])
+{
+
+    signal(SIGINT, sig_handler);
+    signal(SIGTSTP, sig_handler);
+    if (!server())
+        return 0;
+    while (noThread < 3)
     {
         std::cout << "Listening" << std::endl;
         socklen_t len = sizeof(clntAdd);
@@ -145,8 +162,11 @@ int main(int argc, char *argv[])
         {
             std::cout << "Connection successful" << std::endl;
         }
-
-        pthread_create(&threadA[noThread], NULL, task1, (void *)&connFd);
+        int a[]{connFd, noThread};
+        int error = pthread_create(&threadA[noThread], NULL, task1, (void *)&a);
+        if (error != 0)
+            printf("\nThread can't be created :[%s]",
+                   strerror(error));
         noThread++;
     }
 
@@ -154,49 +174,58 @@ int main(int argc, char *argv[])
     {
         pthread_join(threadA[i], NULL);
     }
+    free(&my_stack);
+    // for (auto &thread : threadB) // access by reference to avoid copying
+    // {
+    //     pthread_join(thread, NULL);
+    // }
 }
 void *task1(void *dummyPt)
 {
     int sock = *((int *)dummyPt);
-    std::cout << "Thread No: " << pthread_self() << std::endl;
-    std::cout << sock << std::endl;
-    char r[BUFFSIZE] = {0};
-    char *w;
+    int numberThread = *((int *)dummyPt + 1);
+    std::cout << "Thread No: " << pthread_self() << " Socket No " << sock << " NumberThread " << numberThread << std::endl;
+
     while (true)
     {
-        if (read(sock, r, BUFFSIZE) == -1)
+        char *writer = 0;
+        char reader[BUFFSIZE] = {0};
+        bzero(reader, BUFFSIZE);
+        if (read(sock, reader, BUFFSIZE) == -1)
+        {
             puts("erro");
-
-        if (strncmp(r, "PUSH", 4) == 0)
-        {
-            push(&my_stack, r+5);
-            // puts(top(my_stack));
-            write(sock, "pushed", 6);
         }
-        else if (strncmp(r, "POP", 3) == 0)
+        if (strncmp(reader, "PUSH", 4) == 0)
         {
-            puts("POP");
-            w = pop(&my_stack);
-            int len = strlen(w);
-            write(sock, w, len);
+            push(&my_stack, reader + 5);
+            send(sock, "Pushed", 6, 0);
         }
-        else if (strncmp(r, "TOP", 3) == 0)
+        else if (strncmp(reader, "POP", 3) == 0)
         {
-            puts("TOP");
-            w = top(my_stack);
-            int len = strlen(w);
-            write(sock, w, len);
+            Stack *temp = pop(&my_stack);
+            write(sock, (temp != NULL) ? temp->data : "Empty", (temp != NULL) ? sizeof(temp->data) : em);
+            if (temp != NULL)
+            {
+                free(temp->data);
+                delete temp;
+            }
         }
-        else if (strncmp(r, "exit", 4) == 0)
+        else if (strncmp(reader, "TOP", 3) == 0)
+        {
+            writer = top(my_stack);
+            write(sock, (writer != NULL) ? writer : "Empty", (writer != NULL) ? sizeof(writer) : em);
+        }
+        else if (strncmp(reader, "exit", 4) == 0)
         {
             write(sock, "succ", 4);
             close(sock);
-            return 0;
+            std::cout << "\nClosing thread and connection" << std::endl;
+            break;
+        }
+        else
+        {
+            write(sock, "Invaild commands", 16);
         }
     }
-
-    std::cout << "\nClosing thread and conn" << std::endl;
-    write(sock, "exit", 4);
-    close(sock);
     return 0;
 }

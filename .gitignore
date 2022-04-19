@@ -1,12 +1,16 @@
 # Prerequisites
 *.d
-
+temp
+Test.cpp
+.gitignore
+.vscode
 # Compiled Object files
 *.slo
 *.lo
 *.o
 *.obj
-
+server
+client
 # Precompiled Headers
 *.gch
 *.pch
