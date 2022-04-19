@@ -19,7 +19,7 @@
 #else
 #include <unistd.h>
 #endif
-#include <bits/stdc++.h>
+// #include <bits/stdc++.h>
 #include <iostream>
 #include <cstdlib>
 #include <pthread.h>
@@ -50,7 +50,7 @@ int isEmpty(Stack *root)
 char *pop(Stack **root)
 {
     if (isEmpty(*root))
-        return (char *)"Empty";
+        return (char *)"The stack is empty";
     pthread_mutex_lock(&lock);
 
     Stack *temp = *root;
@@ -74,10 +74,11 @@ char *top(Stack *root)
 {
     char *s;
     if (isEmpty(root))
-        s = (char *)"Empty";
+        // s = (char *)"Empty";
+        return (char *)"The stack is empty";
     else
-        s = root->data;
-    return root->data;
+        // s = root->data;
+        return root->data;
 }
 int main(int argc, char *argv[])
 {
@@ -168,8 +169,8 @@ void *task1(void *dummyPt)
 
         if (strncmp(r, "PUSH", 4) == 0)
         {
-            push(&my_stack, r + 5);
-            puts(top(my_stack));
+            push(&my_stack, r+5);
+            // puts(top(my_stack));
             write(sock, "pushed", 6);
         }
         else if (strncmp(r, "POP", 3) == 0)
