@@ -9,10 +9,10 @@ TIDY_FLAGS=-extra-arg=-std=$(CXXVERSION) -checks=bugprone-*,clang-analyzer-*,cpp
 VALGRIND_FLAGS=-v --leak-check=full --show-leak-kinds=all  --error-exitcode=99
 SOURCES=$(wildcard $(SOURCE_PATH)/*.cpp)
 OBJECTS=$(subst sources/,objects/,$(subst .cpp,.o,$(SOURCES)))
-# run: client server test
-run: client server 
+# run: iclient server test
+run: iclient server 
 
-client:client.o
+iclient:iclient.o
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 server:server.o
@@ -34,5 +34,10 @@ valgrind: server
 	valgrind --tool=memcheck $(VALGRIND_FLAGS) ./server 
 
 clean:
-	rm -f $(OBJECTS) *.o client server
+	rm -f $(OBJECTS) *.o iclient server
 	
+client:
+	./iclient
+
+iserver:
+	./server
