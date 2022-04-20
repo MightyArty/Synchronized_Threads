@@ -39,7 +39,7 @@ void sig_handler(int signum)
         printf("\nI'm the second signal, trying to divide\n");
     default:
         reset();
-        close(listenFd);
+        close(sockFd);
     }
 }
 int client()
@@ -56,7 +56,7 @@ int client()
     // }
 
     // portNo = atoi(argv[1]);
-    portNo = htons(3008);
+    portNo = htons(3001);
 
     if ((portNo > 65535) || (portNo < 2000))
     {
@@ -64,9 +64,9 @@ int client()
         return 0;
     }
 
-    listenFd = socket(AF_INET, SOCK_STREAM, 0);
+    sockFd = socket(AF_INET, SOCK_STREAM, 0);
 
-    if (listenFd < 0)
+    if (sockFd < 0)
     {
         cerr << "Cannot open socket" << endl;
         return 0;
@@ -87,7 +87,7 @@ int client()
 
     svrAdd.sin_port = htons(portNo);
 
-    int checker = connect(listenFd, (struct sockaddr *)&svrAdd, sizeof(svrAdd));
+    int checker = connect(sockFd, (struct sockaddr *)&svrAdd, sizeof(svrAdd));
 
     if (checker < 0)
     {
@@ -110,9 +110,9 @@ int main(int argc, char *argv[])
         blue();
         bzero(w, BUFFSIZE);
         cin.getline(w, BUFFSIZE);
-        write(listenFd, w, strlen(w));
+        write(sockFd, w, strlen(w));
         bzero(r, BUFFSIZE);
-        read(listenFd, r, BUFFSIZE);
+        read(sockFd, r, BUFFSIZE);
         red();
         printf("OUTPUT: ");
         puts(r);
@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
         string exit(w);
         if (exit == "exit")
         {
-            close(listenFd);
+            close(sockFd);
             return 1;
         }
     }

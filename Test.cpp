@@ -1,26 +1,10 @@
 #include "doctest.h"
+#include "server.hpp"
+#include "iclient.hpp"
+#include <pthread.h>
+
 #include <iostream>
-#include <string.h>
-#include <cstring>
-#include <unistd.h>
-#include <stdio.h>
-#include <signal.h>
-#include <netdb.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <iomanip>
-#include <strings.h>
-#include <stdlib.h>
-#include <string>
-#include <time.h>
-#include <vector>
-#include "doctest.h"
-#include <string>
-#include <algorithm>
+
 #define BUFFSIZE 1024
 using namespace std;
 
@@ -31,7 +15,7 @@ int client()
 	struct sockaddr_in svrAdd;
 	struct hostent *server;
 
-	portNo = htons(3008);
+	portNo = htons(3002);
 
 	if ((portNo > 65535) || (portNo < 2000))
 	{
@@ -39,9 +23,9 @@ int client()
 		return -1;
 	}
 
-	int listenFd = socket(AF_INET, SOCK_STREAM, 0);
+	int sockTest = socket(AF_INET, SOCK_STREAM, 0);
 
-	if (listenFd < 0)
+	if (sockTest < 0)
 	{
 		cerr << "Cannot open socket" << endl;
 		return -1;
@@ -62,99 +46,93 @@ int client()
 
 	svrAdd.sin_port = htons(portNo);
 
-	int checker = connect(listenFd, (struct sockaddr *)&svrAdd, sizeof(svrAdd));
+	int checker = connect(sockTest, (struct sockaddr *)&svrAdd, sizeof(svrAdd));
 
 	if (checker < 0)
 	{
 		cerr << "Cannot connect!" << endl;
 		return -1;
 	}
-	return listenFd;
+	return sockTest;
+}
+void *server(void *dummyPt)
+{
+	system("./server");
+	return 0;
 }
 
 TEST_CASE("Good")
 {
+	pthread_t threadA[1];
+
+	int error = pthread_create(&threadA[0], NULL, server, NULL);
+	if (error != 0)
+		printf("\nThread can't be created :[%s]",
+			   strerror(error));
+	sleep(5);
 	int c1 = client();
 	int c2 = client();
 	int c3 = client();
-	char *r;
 
-	for(;;){
-		write(c1,"PUSH c1",7);
-		bzero(r, BUFFSIZE);
-        read(listenFd, r, BUFFSIZE);
-		write(c1,"PUSH c1",7);
-		write(c1,"PUSH c1",7);
+	cout << c1 << endl;
+	cout << c2 << endl;
+	cout << c3 << endl;
+
+	SUBCASE("PUSH CASE syn")
+	{
+		char r[BUFFSIZE] = {0};
+		cout << "Inside" << endl;
+		for (int i = 0; i < 2; i++)
+		{
+			write(c1, "PUSH c1", 7);
+			read(c1, r, BUFFSIZE);
+			CHECK(strcmp(r, "Pushed")==0);
+
+			write(c2, "PUSH c2", 7);
+			read(c2, r, BUFFSIZE);
+			CHECK(strcmp(r, "Pushed")==0);
+
+			write(c3, "PUSH c3", 7);
+			read(c3, r, BUFFSIZE);
+			CHECK(strcmp(r, "Pushed")==0);
+		}
+
+		write(c1, "COUNT", 5);
+		read(c1, r, BUFFSIZE);
+		CHECK_EQ(r, "6");
 	}
+	// 	write(c1, "PUSH c1", 7);
+	// 	read(c1, r, BUFFSIZE);
+	// 	CHECK_EQ(r, "Pushed");
 
+	// 	write(c1, "COUNT", 5);
+	// 	read(c1, r, BUFFSIZE);
+	// 	CHECK_EQ(r, "1");
 
-	
+	// 	write(c1, "POP", 3);
+	// 	read(c1, r, BUFFSIZE);
+	// 	CHECK_EQ(r, "c1");
 
-	CHECK()
-}
-// CHECK(nospaces(mat(9, 7, '@', '-')) == nospaces("@@@@@@@@@\n"
-// 												 "@-------@\n"
-// 												 "@-@@@@@-@\n"
-// 												 "@-@---@-@\n"
-// 												 "@-@@@@@-@\n"
-// 												 "@-------@\n"
-// 												 "@@@@@@@@@"));
-// /* Add more test here */
-}
+	// 	write(c1, "COUNT", 5);
+	// 	read(c1, r, BUFFSIZE);
+	// 	CHECK_EQ(r, "0");
+	// }
+	// SUBCASE("exit check")
+	// {
+	// 	char r[BUFFSIZE] = {0};
+	// 	write(c1, "exit", 4);
+	// 	read(c1, r, BUFFSIZE);
+	// 	CHECK_EQ(r, "succ");
+	// 	write(c2, "exit", 4);
+	// 	read(c2, r, BUFFSIZE);
+	// 	CHECK_EQ(r, "succ");
+	// 	write(c3, "exit", 4);
+	// 	read(c3, r, BUFFSIZE);
+	// 	CHECK_EQ(r, "succ");
 
-TEST_CASE("Bad input")
-{
-	// CHECK_THROWS(mat(10, 5, '$', '%'));
-	/* Add more test here */
-}
-
-/* Add more test cases here */
-
-// TEST_CASE("Good inputs")
-// {
-//     SUBCASE("Operator check not throw")
-//     {
-
-//     }
-
-//     SUBCASE("Operators correc")
-//     {
-
-//     }
-//     // if (strcmp(w, "1") == 0)
-//     //     for (int i = 0; i < 200000; i++)
-//     //     {
-//     //         write(listenFd, "PUSH Hello-1\0", 13);
-//     //         read(listenFd, r, BUFFSIZE);
-//     //         puts(r);
-//     //     }
-//     // else if(strcmp(w, "2") == 0)
-//     // {
-//     //     for (int i = 0; i < 200000; i++)
-//     //     {
-//     //         write(listenFd, "PUSH Hello-2\0", 13);
-//     //         read(listenFd, r, BUFFSIZE);
-//     //         puts(r);
-//     //     }
-//     // }else{
-//     //     for (int i = 0; i < 200000; i++)
-//     //     {
-//     //         write(listenFd, "PUSH Hello-3\0", 13);
-//     //         read(listenFd, r, BUFFSIZE);
-//     //         puts(r);
-//     //     }
-//     // }
-// }
-
-// TEST_CASE("Bad inputs")
-// {
-//     SUBCASE("invalid Matrix size")
-//     {
-
-//     }
-// }
-int main()
-{
-
-	return 1;
+	// 	close(c1);
+	// 	close(c2);
+	// 	close(c3);
+	// }
+	pthread_join(threadA[0], NULL);
 }
