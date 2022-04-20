@@ -40,3 +40,6 @@ client:
 
 iserver:
 	./server
+
+tester:
+	./test

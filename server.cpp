@@ -1,5 +1,12 @@
 #include "server.hpp"
 #define em 5
+void welcome(){
+    printf("\033[1;31m    $$      $$$$$  $$$$$$$$$ $     $         \033[0;34m $$$$$         $$     $$$$$       $$      $  $    \n");
+    printf("\033[1;31m   $  $     $   $      $      $   $          \033[0;34m $   $        $  $    $   $      $  $     $ $    \n");
+    printf("\033[1;31m  $ -- $    $$$$$      $        $    \033[1;33m @@@@@@ \033[0;34m $$$$$$$     $ -- $   $$$$$     $ -- $    $$        \n");
+    printf("\033[1;31m $      $   $    $     $        $            \033[0;34m $     $    $      $  $    $   $      $   $ $         \n");
+    printf("\033[1;31m$        $  $     $    $        $            \033[0;34m $$$$$$$   $        $ $     $ $        $  $  $       \n");
+}
 void red()
 {
     printf("\033[1;31m");
@@ -143,7 +150,9 @@ int server()
 }
 int main(int argc, char *argv[])
 {
-
+    red();
+    welcome();
+    reset();
     signal(SIGINT, sig_handler);
     signal(SIGTSTP, sig_handler);
     if (!server())

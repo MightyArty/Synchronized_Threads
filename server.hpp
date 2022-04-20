@@ -55,20 +55,20 @@ The behavior is undefined if the value of ptr does not equal a value returned ea
  */
 void free(Stack **);
 /**
- * @brief
- *
+ * @brief Colloring the text in red color
+ * just for fun :)
  * @return none.
  */
 void red();
 /**
- * @brief
- *
+ * @brief Colloring the text in yellow color
+ * just for fun :)
  * @return none.
  */
 void yellow();
 /**
- * @brief
- *
+ * @brief Reseting the text color back to default
+ * just for fun :)
  * @return none.
  */
 void reset();
@@ -125,11 +125,18 @@ void push(Stack **, char *);
  * @return A reference to the top element in the stack.
  */
 char *top(Stack *);
+
 /**
- * @brief .
- *
- * @param argv :
- * @return none.
+ * @brief Connecting the client inputes : push/pop/top
+ * Checking if the input is valid
+ * If no -> throiwng an error
+ * If yes -> dealing with the input in the needed way
+ * @return void* 
  */
 void *task1(void *);
+
+/**
+ * @brief Initiallize the server side
+ * @return int = 1 on success, 0 on failure
+ */
 int server();
