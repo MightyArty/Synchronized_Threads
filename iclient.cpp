@@ -11,6 +11,22 @@ void reset()
 {
     printf("\033[0m");
 }
+void blue()
+{
+	printf("\033[0;34m");
+}
+void welcom()
+{
+    printf(" #                           #   #############  ##                  ######       ######              ####     ####              \n");
+    printf("  #                         #    #              ##                ##      ##   ##      ##           #    #####     #            \n");
+    printf("   #                       #     #              ##               #            #           #        #                #           \n");
+    printf("    #                     #      #              ##               #            #           #       #                  #          \n");
+    printf("     #                   #       ############   ##               #            #           #      #                    #         \n");
+    printf("      #                 #        #              ##               #            #           #     #                      #        \n");
+    printf("       #       #       #         #              ##               #            #           #    #                        #       \n");
+    printf("        #     # #     #          #              ##                ##      ##   ##      ##     #                          #      \n");
+    printf("         #####   #####           #############  ################    ######       ######      #                            #     \n");
+}
 void sig_handler(int signum)
 {
     switch (signum)
@@ -24,7 +40,6 @@ void sig_handler(int signum)
     default:
         reset();
         close(listenFd);
-        exit(1);
     }
 }
 int client()
@@ -41,7 +56,7 @@ int client()
     // }
 
     // portNo = atoi(argv[1]);
-    portNo = htons(3006);
+    portNo = htons(3008);
 
     if ((portNo > 65535) || (portNo < 2000))
     {
@@ -83,20 +98,25 @@ int client()
 }
 int main(int argc, char *argv[])
 {
-
+    welcom();
     signal(SIGINT, sig_handler);
     signal(SIGTSTP, sig_handler);
     if (!client())
         return 0;
     for (;;)
     {
+        yellow();
         cout << "Enter stuff: ";
+        blue();
         bzero(w, BUFFSIZE);
         cin.getline(w, BUFFSIZE);
         write(listenFd, w, strlen(w));
         bzero(r, BUFFSIZE);
         read(listenFd, r, BUFFSIZE);
+        red();
+        printf("OUTPUT: ");
         puts(r);
+        reset();
         string exit(w);
         if (exit == "exit")
         {

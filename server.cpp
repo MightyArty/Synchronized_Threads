@@ -8,6 +8,10 @@ void yellow()
 {
     printf("\033[1;33m");
 }
+void blue()
+{
+	printf("\033[0;34m");
+}
 void reset()
 {
     printf("\033[0m");
@@ -35,10 +39,8 @@ void sig_handler(int signum)
         yellow();
         printf("I'm the second signal, trying to divide\n");
     default:
-
         close(listenFd);
         reset();
-        exit(1);
     }
 }
 Stack *newNode(char *data)
@@ -96,7 +98,7 @@ int server()
     // }
 
     // portNo = atoi(argv[1]);
-    portNo = htons(3006);
+    portNo = htons(3008);
     if ((portNo > 65535) || (portNo < 2000))
     {
         std::cerr << "Please enter a port number between 2000 - 65535" << std::endl;

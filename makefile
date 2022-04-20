@@ -1,5 +1,4 @@
 CXXFLAGS=-std=$(CXXVERSION) -Werror -Wsign-conversion -I$(SOURCE_PATH)
-
 CXX=clang++-9
 CXXVERSION=c++2a
 SOURCE_PATH=.

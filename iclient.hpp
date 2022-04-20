@@ -21,7 +21,12 @@ char w[BUFFSIZE];
 char r[BUFFSIZE];
 int listenFd;
 using namespace std;
-
+/**
+ * @brief 
+ *
+ * @return none.
+ */
+void blue();
 /**
  * @brief 
  *
@@ -48,3 +53,4 @@ void reset();
  */
 void sig_handler(int);
 int client();
+void welcom();
