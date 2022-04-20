@@ -217,6 +217,25 @@ void *task1(void *dummyPt)
             writer = top(my_stack);
             write(sock, (writer != NULL) ? writer : "Empty", (writer != NULL) ? sizeof(writer) : em);
         }
+
+        else if (strncmp(reader, "COUNT", 5) == 0)
+        {
+            int number = size;
+            char numberArray[10] = {0};
+            if (size != 0)
+            {
+                for (int n = log10(size) + 1, i = n - 1; i >= 0; --i, number /= 10)
+                {
+                    numberArray[i] = (number % 10) + '0';
+                }
+                write(sock, numberArray, 10);
+            }
+            else
+            {
+                write(sock, "0", 1);
+            }
+        }
+
         else if (strncmp(reader, "exit", 4) == 0)
         {
             write(sock, "succ", 4);

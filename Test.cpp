@@ -72,89 +72,95 @@ int client()
 	return listenFd;
 }
 
+char *run = "make run";
+char *make_client = "make ./iserver";
+
 TEST_CASE("Good")
 {
+	system(run);
+	system(make_client);
+	
 	int c1 = client();
 	int c2 = client();
 	int c3 = client();
-	char *r;
+	char r[BUFFSIZE] = {0};
+	char r1[BUFFSIZE] = {0};
 
-	for(;;){
-		write(c1,"PUSH c1",7);
+	SUBCASE("PUSH CASE synchronized"){
 		bzero(r, BUFFSIZE);
-        read(listenFd, r, BUFFSIZE);
-		write(c1,"PUSH c1",7);
-		write(c1,"PUSH c1",7);
+		for(int i = 0 ;i < 1000; i++){
+			write(c1,"PUSH c1",7);
+			read(c1, r, BUFFSIZE);
+			CHECK(strcmp(r, "Pushed") == 0);
+
+			write(c2,"PUSH c2",7);
+			read(c2, r, BUFFSIZE);
+			CHECK(strcmp(r, "Pushed") == 0);
+
+			write(c3,"PUSH c3",7);
+			read(c3, r, BUFFSIZE);
+			CHECK(strcmp(r, "Pushed") == 0);
+		}
 	}
 
+	SUBCASE("POP"){
+		bzero(r, BUFFSIZE);
+		write(c1, "PUSH c1", 7);
+		read(c1, r, BUFFSIZE);
+		CHECK(strcmp(r, "Pushed") == 0);
 
-	
+		write(c1, "COUNT", 5);
+		read(c1, r, BUFFSIZE);
+		CHECK(strcmp(r, "1") == 0);
 
-	CHECK()
-}
-// CHECK(nospaces(mat(9, 7, '@', '-')) == nospaces("@@@@@@@@@\n"
-// 												 "@-------@\n"
-// 												 "@-@@@@@-@\n"
-// 												 "@-@---@-@\n"
-// 												 "@-@@@@@-@\n"
-// 												 "@-------@\n"
-// 												 "@@@@@@@@@"));
-// /* Add more test here */
-}
+		write(c1, "POP", 3);
+		read(c1, r, BUFFSIZE);
+		CHECK(strcmp(r, "c1") == 0);
 
-TEST_CASE("Bad input")
-{
-	// CHECK_THROWS(mat(10, 5, '$', '%'));
-	/* Add more test here */
-}
+		write(c1, "COUNT", 5);
+		read(c1, r, BUFFSIZE);
+		CHECK(strcmp(r, "0") == 0);
+	}
 
-/* Add more test cases here */
+	SUBCASE("TOP"){
+		bzero(r, BUFFSIZE);
+		write(c1, "PUSH c1", 7);
+		read(c1, r, BUFFSIZE);
+		CHECK(strcmp(r, "Pushed") == 0);
 
-// TEST_CASE("Good inputs")
-// {
-//     SUBCASE("Operator check not throw")
-//     {
+		write(c1, "COUNT", 5);
+		read(c1, r, BUFFSIZE);
+		CHECK(strcmp(r, "1") == 0);
 
-//     }
+		write(c1, "TOP", 3);
+		read(c1, r, BUFFSIZE);
+		CHECK(strcmp(r, "c1") == 0);
 
-//     SUBCASE("Operators correc")
-//     {
+		write(c1, "COUNT", 5);
+		read(c1, r, BUFFSIZE);
+		CHECK(strcmp(r, "1") == 0);
+	}
 
-//     }
-//     // if (strcmp(w, "1") == 0)
-//     //     for (int i = 0; i < 200000; i++)
-//     //     {
-//     //         write(listenFd, "PUSH Hello-1\0", 13);
-//     //         read(listenFd, r, BUFFSIZE);
-//     //         puts(r);
-//     //     }
-//     // else if(strcmp(w, "2") == 0)
-//     // {
-//     //     for (int i = 0; i < 200000; i++)
-//     //     {
-//     //         write(listenFd, "PUSH Hello-2\0", 13);
-//     //         read(listenFd, r, BUFFSIZE);
-//     //         puts(r);
-//     //     }
-//     // }else{
-//     //     for (int i = 0; i < 200000; i++)
-//     //     {
-//     //         write(listenFd, "PUSH Hello-3\0", 13);
-//     //         read(listenFd, r, BUFFSIZE);
-//     //         puts(r);
-//     //     }
-//     // }
-// }
+	SUBCASE("COUNT"){
+		bzero(r, BUFFSIZE);
+		write(c1, "COUNT", 5);
+		read(c1, r, BUFFSIZE);
+		CHECK(strcmp(r, "0") == 0);
 
-// TEST_CASE("Bad inputs")
-// {
-//     SUBCASE("invalid Matrix size")
-//     {
+		write(c1, "PUSH c1", 7);
+		read(c1, r, BUFFSIZE);
+		CHECK(strcmp(r, "Pushed") == 0);
 
-//     }
-// }
-int main()
-{
+		write(c1, "COUNT", 5);
+		read(c1, r, BUFFSIZE);
+		CHECK(strcmp(r, "1") == 0);
 
-	return 1;
+		write(c1, "POP", 3);
+		read(c1, r, BUFFSIZE);
+		CHECK(strcmp(r, "c1") == 0);
+
+		write(c1, "COUNT", 5);
+		read(c1, r, BUFFSIZE);
+		CHECK(strcmp(r, "0") == 0);
+	}
 }
