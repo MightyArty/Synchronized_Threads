@@ -10,7 +10,7 @@ void yellow()
 }
 void blue()
 {
-	printf("\033[0;34m");
+    printf("\033[0;34m");
 }
 void reset()
 {
@@ -195,10 +195,11 @@ void *task1(void *dummyPt)
         bzero(reader, BUFFSIZE);
         if (read(sock, reader, BUFFSIZE) == -1)
         {
-            puts("erro");
+            puts("error");
         }
         if (strncmp(reader, "PUSH", 4) == 0)
         {
+            puts("Pushed");
             push(&my_stack, reader + 5);
             send(sock, "Pushed", 6, 0);
         }
@@ -217,7 +218,6 @@ void *task1(void *dummyPt)
             writer = top(my_stack);
             write(sock, (writer != NULL) ? writer : "Empty", (writer != NULL) ? sizeof(writer) : em);
         }
-
         else if (strncmp(reader, "COUNT", 5) == 0)
         {
             int number = size;
@@ -235,7 +235,6 @@ void *task1(void *dummyPt)
                 write(sock, "0", 1);
             }
         }
-
         else if (strncmp(reader, "exit", 4) == 0)
         {
             write(sock, "succ", 4);

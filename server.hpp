@@ -13,9 +13,10 @@
 #include <vector>
 #include <pthread.h>
 #include <signal.h>
-#include <bits/stdc++.h>
+// #include <bits/stdc++.h>
 #include <cstdlib>
 #include <thread>
+#include <cmath>
 #define BUFFSIZE 1024
 class Stack
 {

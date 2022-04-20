@@ -1,26 +1,10 @@
 #include "doctest.h"
+#include "server.hpp"
+#include "iclient.hpp"
+#include <pthread.h>
+
 #include <iostream>
-#include <string.h>
-#include <cstring>
-#include <unistd.h>
-#include <stdio.h>
-#include <signal.h>
-#include <netdb.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <iomanip>
-#include <strings.h>
-#include <stdlib.h>
-#include <string>
-#include <time.h>
-#include <vector>
-#include "doctest.h"
-#include <string>
-#include <algorithm>
+
 #define BUFFSIZE 1024
 using namespace std;
 
@@ -39,9 +23,9 @@ int client()
 		return -1;
 	}
 
-	int listenFd = socket(AF_INET, SOCK_STREAM, 0);
+	int sockTest = socket(AF_INET, SOCK_STREAM, 0);
 
-	if (listenFd < 0)
+	if (sockTest < 0)
 	{
 		cerr << "Cannot open socket" << endl;
 		return -1;
@@ -62,48 +46,72 @@ int client()
 
 	svrAdd.sin_port = htons(portNo);
 
-	int checker = connect(listenFd, (struct sockaddr *)&svrAdd, sizeof(svrAdd));
+	int checker = connect(sockTest, (struct sockaddr *)&svrAdd, sizeof(svrAdd));
 
 	if (checker < 0)
 	{
 		cerr << "Cannot connect!" << endl;
 		return -1;
 	}
-	return listenFd;
+	return sockTest;
+}
+void *server(void *dummyPt)
+{
+	system("./server");
+	return 0;
 }
 
-char *run = "make run";
-char *make_client = "make ./iserver";
+int c1;
+int c2;
+int c3;
 
-TEST_CASE("Good")
-{
-	system(run);
-	system(make_client);
-	
-	int c1 = client();
-	int c2 = client();
-	int c3 = client();
+/**
+ * @brief Test for pushing into the stack
+*/
+TEST_CASE("PUSH"){
+	pthread_t threadA[1];
+	int error = pthread_create(&threadA[0], NULL, server, NULL);
+	if (error != 0)
+		printf("\nThread can't be created :[%s]",
+			   strerror(error));
+	sleep(5);
+	c1 = client();
+	sleep(1);
+	c2 = client();
+	sleep(1);
+	c3 = client();
+	sleep(1);
+	cout << c1 << endl;
+	cout << c2 << endl;
+	cout << c3 << endl;
 	char r[BUFFSIZE] = {0};
-	char r1[BUFFSIZE] = {0};
 
-	SUBCASE("PUSH CASE synchronized"){
+	cout << "Inside PUSH case" << endl;
 		bzero(r, BUFFSIZE);
-		for(int i = 0 ;i < 1000; i++){
-			write(c1,"PUSH c1",7);
-			read(c1, r, BUFFSIZE);
-			CHECK(strcmp(r, "Pushed") == 0);
+		write(c1, "PUSH c1", 7);
+		read(c1, r, BUFFSIZE);
+		CHECK(strcmp(r, "Pushed") == 0);
 
-			write(c2,"PUSH c2",7);
-			read(c2, r, BUFFSIZE);
-			CHECK(strcmp(r, "Pushed") == 0);
+		write(c2, "PUSH c2", 7);
+		read(c2, r, BUFFSIZE);
+		CHECK(strcmp(r, "Pushed") == 0);
 
-			write(c3,"PUSH c3",7);
-			read(c3, r, BUFFSIZE);
-			CHECK(strcmp(r, "Pushed") == 0);
-		}
-	}
+		write(c3, "PUSH c3", 7);
+		read(c3, r, BUFFSIZE);
+		CHECK(strcmp(r, "Pushed") == 0);
 
-	SUBCASE("POP"){
+		write(c1, "COUNT", 5);
+		read(c1, r, BUFFSIZE);
+		CHECK(strcmp(r, "3") == 0);
+}
+/**
+ * @brief Test for poping out of the stack
+ */
+TEST_CASE("POP"){
+	cout << c1 << endl;
+	char r[BUFFSIZE] = {0};
+
+	cout << "Inside POP case" << endl;
 		bzero(r, BUFFSIZE);
 		write(c1, "PUSH c1", 7);
 		read(c1, r, BUFFSIZE);
@@ -111,7 +119,7 @@ TEST_CASE("Good")
 
 		write(c1, "COUNT", 5);
 		read(c1, r, BUFFSIZE);
-		CHECK(strcmp(r, "1") == 0);
+		CHECK(strcmp(r, "4") == 0);
 
 		write(c1, "POP", 3);
 		read(c1, r, BUFFSIZE);
@@ -119,10 +127,17 @@ TEST_CASE("Good")
 
 		write(c1, "COUNT", 5);
 		read(c1, r, BUFFSIZE);
-		CHECK(strcmp(r, "0") == 0);
-	}
+		CHECK(strcmp(r, "3") == 0);		
+}
 
-	SUBCASE("TOP"){
+/**
+ * @brief test for showing the top of the stack
+ */
+TEST_CASE("TOP"){
+	cout << c1 << endl;
+	char r[BUFFSIZE] = {0};
+	cout << "Inside TOP case" << endl;
+
 		bzero(r, BUFFSIZE);
 		write(c1, "PUSH c1", 7);
 		read(c1, r, BUFFSIZE);
@@ -130,7 +145,7 @@ TEST_CASE("Good")
 
 		write(c1, "COUNT", 5);
 		read(c1, r, BUFFSIZE);
-		CHECK(strcmp(r, "1") == 0);
+		CHECK(strcmp(r, "4") == 0);
 
 		write(c1, "TOP", 3);
 		read(c1, r, BUFFSIZE);
@@ -138,29 +153,33 @@ TEST_CASE("Good")
 
 		write(c1, "COUNT", 5);
 		read(c1, r, BUFFSIZE);
-		CHECK(strcmp(r, "1") == 0);
-	}
+		CHECK(strcmp(r, "4") == 0);
 
-	SUBCASE("COUNT"){
-		bzero(r, BUFFSIZE);
-		write(c1, "COUNT", 5);
-		read(c1, r, BUFFSIZE);
-		CHECK(strcmp(r, "0") == 0);
+		
+}
+/**
+ * @brief test for the "exit" command
+ * should close the connection both on serverl and client sides
+ */
+TEST_CASE("EXIT"){
+	char r[BUFFSIZE] = {0};
+	cout << "Inside EXIT case" << endl;
 
-		write(c1, "PUSH c1", 7);
-		read(c1, r, BUFFSIZE);
-		CHECK(strcmp(r, "Pushed") == 0);
+	bzero(r, BUFFSIZE);
+	write(c1, "exit", 4);
+	read(c1, r, BUFFSIZE);
+	CHECK(strcmp(r, "succ") == 0);
 
-		write(c1, "COUNT", 5);
-		read(c1, r, BUFFSIZE);
-		CHECK(strcmp(r, "1") == 0);
+	write(c2, "exit", 4);
+	read(c2, r, BUFFSIZE);
+	CHECK(strcmp(r, "succ") == 0);
 
-		write(c1, "POP", 3);
-		read(c1, r, BUFFSIZE);
-		CHECK(strcmp(r, "c1") == 0);
+	write(c3, "exit", 4);
+	read(c3, r, BUFFSIZE);
+	CHECK(strcmp(r, "succ") == 0);
 
-		write(c1, "COUNT", 5);
-		read(c1, r, BUFFSIZE);
-		CHECK(strcmp(r, "0") == 0);
-	}
+	close(c1);
+	close(c2);
+	close(c3);
+	pthread_join(threadA[0], NULL);
 }

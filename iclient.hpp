@@ -17,10 +17,10 @@
 #include <time.h>
 #include <vector>
 #define BUFFSIZE 1024
+using namespace std;
 char w[BUFFSIZE];
 char r[BUFFSIZE];
-int listenFd;
-using namespace std;
+int sockFd;
 /**
  * @brief 
  *
