@@ -15,13 +15,16 @@ void blue()
 {
 	printf("\033[0;34m");
 }
+void green(){
+    printf("\033[0;32m");
+}
 void welcom()
 {
-    printf("\033[0;36m   $$$$  $     $  $$$$  $$   $ $$$$$$$$  \n");
-    printf("\033[0;36m  $      $     $  $     $ $  $    $    \n");
-    printf("\033[0;36m  $      $     $  $$$$  $  $ $    $  \n");
-    printf("\033[0;36m  $      $     $  $     $   $$    $     \n");
-    printf("\033[0;36m   $$$$  $$$$  $  $$$$  $    $    $     \n");
+    printf("\033[1;36m   $$$$  $     $  $$$$  $$   $ $$$$$$$$$$\n");
+    printf("\033[1;36m  $      $     $  $     $ $  $     $  \n");
+    printf("\033[1;36m  $      $     $  $$$$  $  $ $     $ \n");
+    printf("\033[1;36m  $      $     $  $     $   $$     $\n");
+    printf("\033[1;36m   $$$$  $$$$  $  $$$$  $    $     $ \n");
     reset();
 }
 void sig_handler(int signum)
@@ -30,10 +33,13 @@ void sig_handler(int signum)
     {
     case SIGTSTP:
         red();
-        printf("\nI'm the first signal..\n");
+        printf("Trying to exit on CONTROL-Z command\n");
     case SIGINT:
         yellow();
-        printf("\nI'm the second signal, trying to divide\n");
+        printf("Trying to exit on CONTROL-C command \n");
+    case SIGQUIT:
+        green();
+        printf("Trying to exit on CONTROL-/ command\n");
     default:
         reset();
         close(sockFd);

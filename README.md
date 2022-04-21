@@ -10,8 +10,8 @@ $ git clone https://github.com/MightyArty/Synchronized_Threads.git
 $ cd Synchronized_Threads
 # Open the terminal on Linux
 $ Run "make run"
-$ Run Server "make iserver"
-$ Run Iclient "make client"
+$ Run Server "./server"
+$ Run Iclient "./iclient"
 ```
 
 ## Running Test:
@@ -23,5 +23,10 @@ $ git clone https://github.com/MightyArty/Synchronized_Threads.git
 $ cd Synchronized_Threads
 # Open the terminal on Linux
 $ Run "make run"
-$ Run Test "make tester"
+$ Run Test "./test"
+```
+
+## Cleaning files:
+```bash
+$ Run "make clean"
 ```

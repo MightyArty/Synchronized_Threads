@@ -1,11 +1,15 @@
 #include "server.hpp"
 #define em 5
+/**
+ * @brief The functions welcome,red,yellow,blue,green and reset are just for fun
+ * We want you to enjoy the proccess :)
+ */
 void welcome(){
-    printf("\033[1;31m    $$      $$$$$  $$$$$$$$$ $     $         \033[0;34m $$$$$         $$     $$$$$       $$      $  $    \n");
-    printf("\033[1;31m   $  $     $   $      $      $   $          \033[0;34m $   $        $  $    $   $      $  $     $ $    \n");
-    printf("\033[1;31m  $ -- $    $$$$$      $        $    \033[1;33m @@@@@@ \033[0;34m $$$$$$$     $ -- $   $$$$$     $ -- $    $$        \n");
-    printf("\033[1;31m $      $   $    $     $        $            \033[0;34m $     $    $      $  $    $   $      $   $ $         \n");
-    printf("\033[1;31m$        $  $     $    $        $            \033[0;34m $$$$$$$   $        $ $     $ $        $  $  $       \n");
+    printf("\033[1;31m    $$      $$$$$  $$$$$$$$$ $     $         \033[1;34m $$$$$         $$     $$$$$       $$      $  $    \n");
+    printf("\033[1;31m   $  $     $   $      $      $   $          \033[1;34m $   $        $  $    $   $      $  $     $ $    \n");
+    printf("\033[1;31m  $ -- $    $$$$$      $        $    \033[1;33m @@@@@@ \033[1;34m $$$$$$$     $ -- $   $$$$$     $ -- $    $$        \n");
+    printf("\033[1;31m $      $   $    $     $        $            \033[1;34m $     $    $      $  $    $   $      $   $ $         \n");
+    printf("\033[1;31m$        $  $     $    $        $            \033[1;34m $$$$$$$   $        $ $     $ $        $  $  $       \n");
 }
 void red()
 {
@@ -18,6 +22,9 @@ void yellow()
 void blue()
 {
     printf("\033[0;34m");
+}
+void green(){
+    printf("\033[0;32m");
 }
 void reset()
 {
@@ -41,10 +48,13 @@ void sig_handler(int signum)
     {
     case SIGTSTP:
         red();
-        printf("I'm the first signal..\n");
+        printf("Trying to exit on CONTROL-Z command\n");
     case SIGINT:
         yellow();
-        printf("I'm the second signal, trying to divide\n");
+        printf("Trying to exit on CONTROL-C command\n");
+    case SIGQUIT:
+        green();
+        printf("Trying to exit on CONTROL-/ command\n");
     default:
         close(listenFd);
         reset();
@@ -155,6 +165,7 @@ int main(int argc, char *argv[])
     reset();
     signal(SIGINT, sig_handler);
     signal(SIGTSTP, sig_handler);
+    signal(SIGQUIT, sig_handler);
     if (!server())
         return 0;
     while (noThread < 3)
@@ -186,10 +197,6 @@ int main(int argc, char *argv[])
         pthread_join(threadA[i], NULL);
     }
     free(&my_stack);
-    // for (auto &thread : threadB) // access by reference to avoid copying
-    // {
-    //     pthread_join(thread, NULL);
-    // }
 }
 void *task1(void *dummyPt)
 {

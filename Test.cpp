@@ -7,6 +7,28 @@
 
 #define BUFFSIZE 1024
 using namespace std;
+void red()
+{
+    printf("\033[1;31m");
+}
+void yellow()
+{
+    printf("\033[1;33m");
+}
+void blue()
+{
+    printf("\033[0;34m");
+}
+void green(){
+    printf("\033[0;32m");
+}
+void purpule(){
+	printf("\033[0;35m");
+}
+void reset()
+{
+    printf("\033[0m");
+}
 
 int client()
 {
@@ -85,8 +107,9 @@ TEST_CASE("PUSH"){
 	cout << c2 << endl;
 	cout << c3 << endl;
 	char r[BUFFSIZE] = {0};
-
+	green();
 	cout << "Inside PUSH case" << endl;
+	reset();
 		bzero(r, BUFFSIZE);
 		write(c1, "PUSH c1", 7);
 		read(c1, r, BUFFSIZE);
@@ -110,8 +133,9 @@ TEST_CASE("PUSH"){
 TEST_CASE("POP"){
 	cout << c1 << endl;
 	char r[BUFFSIZE] = {0};
-
+	yellow();
 	cout << "Inside POP case" << endl;
+	reset();
 		bzero(r, BUFFSIZE);
 		write(c1, "PUSH c1", 7);
 		read(c1, r, BUFFSIZE);
@@ -136,8 +160,9 @@ TEST_CASE("POP"){
 TEST_CASE("TOP"){
 	cout << c1 << endl;
 	char r[BUFFSIZE] = {0};
+	blue();
 	cout << "Inside TOP case" << endl;
-
+	reset();
 		bzero(r, BUFFSIZE);
 		write(c1, "PUSH c1", 7);
 		read(c1, r, BUFFSIZE);
@@ -158,12 +183,48 @@ TEST_CASE("TOP"){
 		
 }
 /**
+ * @brief Testing the COUNT function
+ * Should return the current number of elements in the stack
+ * First check if there is 4 elements, the push one and check if changed to 5
+ * Then pop one element from the stack  and check again if the counter turned back to 4
+ */
+TEST_CASE("COUNT"){
+	char r[BUFFSIZE] = {0};
+	purpule();
+	cout << "Inside COUNT case" << endl;
+	reset();
+	bzero(r, BUFFSIZE);
+
+	write(c1, "COUNT", 5);
+	read(c1, r, BUFFSIZE);
+	CHECK(strcmp(r, "4") == 0);
+
+	write(c1, "PUSH c1", 7);
+	read(c1, r, BUFFSIZE);
+	CHECK(strcmp(r, "Pushed") == 0);
+
+	write(c1, "COUNT", 5);
+	read(c1, r, BUFFSIZE);
+	CHECK(strcmp(r, "5") == 0);
+
+	write(c1, "POP", 3);
+	read(c1, r, BUFFSIZE);
+	CHECK(strcmp(r, "c1") == 0);
+
+	write(c1, "COUNT", 5);
+	read(c1, r, BUFFSIZE);
+	CHECK(strcmp(r, "4") == 0);
+}
+
+/**
  * @brief test for the "exit" command
  * should close the connection both on serverl and client sides
  */
 TEST_CASE("EXIT"){
 	char r[BUFFSIZE] = {0};
+	red();
 	cout << "Inside EXIT case" << endl;
+	reset();
 
 	bzero(r, BUFFSIZE);
 	write(c1, "exit", 4);
