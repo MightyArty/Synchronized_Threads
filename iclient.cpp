@@ -13,19 +13,22 @@ void reset()
 }
 void blue()
 {
-	printf("\033[0;34m");
+    printf("\033[0;34m");
 }
-void green(){
+void green()
+{
     printf("\033[0;32m");
 }
 void welcom()
 {
-    printf("\033[1;36m   $$$$  $     $  $$$$  $$   $ $$$$$$$$$$\n");
-    printf("\033[1;36m  $      $     $  $     $ $  $     $  \n");
-    printf("\033[1;36m  $      $     $  $$$$  $  $ $     $ \n");
-    printf("\033[1;36m  $      $     $  $     $   $$     $\n");
-    printf("\033[1;36m   $$$$  $$$$  $  $$$$  $    $     $ \n");
-    reset();
+    green();
+    puts(" =============================================");
+    printf("\033[0;32m||\033[1;36m   $$$$  $     $  $$$$  $$   $ $$$$$$$$$$\033[0;32m ||\n");
+    printf("||\033[1;36m  $      $     $  $     $ $  $     $     \033[0;32m ||\n");
+    printf("||\033[1;36m  $      $     $  $$$$  $  $ $     $     \033[0;32m ||\n");
+    printf("||\033[1;36m  $      $     $  $     $   $$     $     \033[0;32m ||\n");
+    printf("||\033[1;36m   $$$$  $$$$  $  $$$$  $    $     $     \033[0;32m ||\n");
+    puts(" =============================================");
 }
 void sig_handler(int signum)
 {
@@ -33,6 +36,7 @@ void sig_handler(int signum)
     {
     case SIGTSTP:
         red();
+        puts("");
         printf("Trying to exit on CONTROL-Z command\n");
     case SIGINT:
         yellow();
@@ -43,28 +47,38 @@ void sig_handler(int signum)
     default:
         reset();
         close(sockFd);
+        cout << "Closing socket" << endl;
     }
 }
-int client()
+int client(int argc, char *argv[])
 {
+    red();
     int portNo;
     bool loop = false;
     struct sockaddr_in svrAdd;
     struct hostent *server;
 
-    // if (argc < 2)
-    // {
-    //     cerr << "Syntam : ./server <port>" << endl;
-    //     return 0;
-    // }
-
-    // portNo = atoi(argv[1]);
-    portNo = htons(3001);
-
-    if ((portNo > 65535) || (portNo < 2000))
+    if (argc >= 2)
     {
-        cerr << "Please enter a port number between 2000 - 65535" << endl;
-        return 0;
+        try
+        {
+            portNo = atoi(argv[1]);
+            if ((portNo > 65535) || (portNo < 2000))
+            {
+                throw invalid_argument("Please enter a port number between 2000 - 65535");
+            }
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << e.what() << '\n';
+            portNo = htons(3000);
+            cout << "Port :" << portNo << endl;
+        }
+    }
+    else
+    {
+        portNo = htons(3000);
+        cout << "Port :" << portNo << endl;
     }
 
     sockFd = socket(AF_INET, SOCK_STREAM, 0);
@@ -104,26 +118,33 @@ int main(int argc, char *argv[])
     welcom();
     signal(SIGINT, sig_handler);
     signal(SIGTSTP, sig_handler);
-    if (!client())
+    signal(SIGQUIT, sig_handler);
+
+    if (!client(argc, argv))
         return 0;
     for (;;)
     {
         yellow();
         cout << "Enter stuff: ";
         blue();
-        bzero(w, BUFFSIZE);
-        cin.getline(w, BUFFSIZE);
-        write(sockFd, w, strlen(w));
-        bzero(r, BUFFSIZE);
-        read(sockFd, r, BUFFSIZE);
+        bzero(wirter, BUFFSIZE);
+        cin.getline(wirter, BUFFSIZE);
+        write(sockFd, wirter, strlen(wirter));
+        bzero(reader, BUFFSIZE);
+        read(sockFd, reader, BUFFSIZE);
         red();
-        printf("OUTPUT: ");
-        puts(r);
+        if (strcmp(reader, "(-1)") == 0)
+            printf("ERROR: Invaild commands ");
+        else
+            printf("OUTPUT: ");
+        puts(reader);
         reset();
-        string exit(w);
-        if (exit == "exit")
+        string exit(wirter);
+        if (exit == "EXIT")
         {
             close(sockFd);
+            red();
+            cout << "Try to close client" << endl;
             return 1;
         }
     }
