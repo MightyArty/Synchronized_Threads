@@ -112,6 +112,7 @@ void scan_merge()
  * current program break and the blocks on the free list */
 void stats(char *prefix)
 {
+    printf("\033[1;31m");
     printf("[%s] program break: %10p\n", prefix, sbrk(0));
     block_t *ptr = head;
     printf("[%s] free list: \n", prefix);
@@ -122,6 +123,7 @@ void stats(char *prefix)
         ptr = ptr->next;
         c++;
     }
+    printf("\033[0m");
 }
 
 /* splits the block b by creating a new block after size bytes,
@@ -170,7 +172,7 @@ _malloc(size_t size)
      * more alloc_size bytes (probably way more than requested) and then
      * split the newly allocated block to keep the spare space on our free
      * list */
-    ptr = (block_t*)sbrk(alloc_size);
+    ptr = (block_t*)sbrk((intptr_t)alloc_size);
     if (!ptr)
     {
         printf("failed to alloc %ld\n", alloc_size);
@@ -206,9 +208,5 @@ void _cleanup()
     }
     head = NULL;
     stats((char*)"_cleanup end");
-}
-
-void print(){
-    printf("hello");
 }
 

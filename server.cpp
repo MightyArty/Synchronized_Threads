@@ -1,5 +1,5 @@
 #include "server.hpp"
-// #include "malloc.h"
+#include "malloc.h"
 #define em 5
 /**
  * @brief The functions welcome,red,yellow,blue,green and reset are just for fun
@@ -40,7 +40,7 @@ void free_stack(Stack **root)
     {
         Stack *temp = *root;
         *root = (*root)->next;
-        free(temp->data);
+        _free(temp->data);
         delete temp;
     }
 
@@ -72,7 +72,7 @@ void sig_handler(int signum)
 Stack *newNode(char *data)
 {
     Stack *stack = new Stack();
-    stack->data = strcpy((char *)malloc(BUFFSIZE), data);
+    stack->data = strcpy((char *)_malloc(BUFFSIZE), data);
     stack->next = NULL;
     return stack;
 }
@@ -178,7 +178,6 @@ int server(int argc, char *argv[])
 }
 int main(int argc, char *argv[])
 {
-    // print();
     red();
     welcome();
     reset();
@@ -215,7 +214,8 @@ int main(int argc, char *argv[])
     {
         pthread_join(threadA[i], NULL);
     }
-    free_stack(&my_stack);
+    if (size != 0)
+        free_stack(&my_stack);
 }
 void *task1(void *dummyPt)
 {
@@ -244,7 +244,7 @@ void *task1(void *dummyPt)
             write(sock, (temp != NULL) ? temp->data : "Empty", (temp != NULL) ? sizeof(temp->data) : em);
             if (temp != NULL)
             {
-                free(temp->data);
+                _free(temp->data);
                 delete temp;
             }
         }
@@ -272,7 +272,8 @@ void *task1(void *dummyPt)
         }
         else if (strncmp(reader, "CLEAN", 5) == 0)
         {
-            free_stack(&my_stack);
+            if (size != 0)
+                free_stack(&my_stack);
             write(sock, "Clean stack succeeded", 21);
         }
         else if (strncmp(reader, "EXIT", 4) == 0)

@@ -11,7 +11,7 @@ typedef struct block
 } block_t;
 
 #ifndef ALLOC_UNIT
-#define ALLOC_UNIT 3 * sysconf(_SC_PAGESIZE)
+#define ALLOC_UNIT (long unsigned int )3 * (long unsigned int )sysconf(_SC_PAGESIZE)
 #endif
 
 #ifndef MIN_DEALLOC
@@ -34,6 +34,4 @@ void *_malloc(size_t size);
 void _free(void *ptr);
 
 void _cleanup();
-
-void print();
 
