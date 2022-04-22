@@ -272,8 +272,10 @@ void *task1(void *dummyPt)
         }
         else if (strncmp(reader, "CLEAN", 5) == 0)
         {
-            if (size != 0)
+            if (size != 0){
                 free_stack(&my_stack);
+                size = 0;
+            }
             write(sock, "Clean stack succeeded", 21);
         }
         else if (strncmp(reader, "EXIT", 4) == 0)
