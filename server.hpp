@@ -53,7 +53,7 @@ The behavior is undefined if the value of ptr does not equal a value returned ea
  * @param root : A reference to the top element in the stack.
  * @return none.
  */
-void free(Stack **);
+void free_stack(Stack **);
 /**
  * @brief Colloring the text in red color
  * just for fun :)
@@ -139,4 +139,4 @@ void *task1(void *);
  * @brief Initiallize the server side
  * @return int = 1 on success, 0 on failure
  */
-int server();
+int server(int argc, char *argv[]);

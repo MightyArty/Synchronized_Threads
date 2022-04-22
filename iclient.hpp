@@ -18,8 +18,8 @@
 #include <vector>
 #define BUFFSIZE 1024
 using namespace std;
-char w[BUFFSIZE];
-char r[BUFFSIZE];
+char wirter[BUFFSIZE];
+char reader[BUFFSIZE];
 int sockFd;
 /**
  * @brief 
@@ -52,5 +52,5 @@ void reset();
  * @return non.
  */
 void sig_handler(int);
-int client();
+int client(int argc, char *argv[]);
 void welcom();
