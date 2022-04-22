@@ -40,7 +40,7 @@ $(OBJECT_PATH)/%.o: $(SOURCE_PATH)/%.c*  $(HEADERS)
 tidy:
 	clang-tidy $(SOURCES) $(TIDY_FLAGS) --
 
-valgrind: server
+valgrind: server client
 	valgrind --tool=memcheck $(VALGRIND_FLAGS) ./server 
 
 clean:

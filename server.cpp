@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
     signal(SIGQUIT, sig_handler);
     if (!server(argc, argv))
         return 0;
-    while (noThread < 3)
+    while (noThread < 100)
     {
         std::cout << "Listening" << std::endl;
         socklen_t len = sizeof(clntAdd);
@@ -210,7 +210,7 @@ int main(int argc, char *argv[])
         noThread++;
     }
 
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 100; i++)
     {
         pthread_join(threadA[i], NULL);
     }

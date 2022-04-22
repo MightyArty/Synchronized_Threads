@@ -32,7 +32,7 @@ int noThread = 0;
 int count = 0;
 pthread_mutex_t lock;
 Stack *my_stack;
-pthread_t threadA[3];
+pthread_t threadA[100];
 int pId, portNo;
 socklen_t len; // store size of the address
 struct sockaddr_in svrAdd, clntAdd;
