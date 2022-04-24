@@ -11,10 +11,10 @@ OBJECTS=$(subst .cpp,.o,$(SOURCES))
 KNOWN_TARGETS = target
 args := $(filter-out $(KNOWN_TARGETS),$(MAKECMDGOALS))
 
-# run: iclient server test
-run: iclient server test 
+# run: client server test
+run: client server test 
 
-iclient:iclient.o
+client:client.o
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 server:server.o libclass.a 
@@ -44,10 +44,10 @@ valgrind: server client
 	valgrind --tool=memcheck $(VALGRIND_FLAGS) ./server 
 
 clean:
-	rm -f $(OBJECTS) *.o iclient server test malloc *.a *.out
+	rm -f $(OBJECTS) *.o client server test malloc *.a *.out
 	
-client:
-	./iclient 
+iclient:
+	./client 
 
 iserver:
 	./server 
