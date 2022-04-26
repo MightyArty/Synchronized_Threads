@@ -71,13 +71,13 @@ int client(int argc, char *argv[])
         catch (const std::exception &e)
         {
             std::cerr << e.what() << '\n';
-            portNo = htons(3000);
+            portNo = htons(3003);
             cout << "Port :" << portNo << endl;
         }
     }
     else
     {
-        portNo = htons(3000);
+        portNo = htons(3003);
         cout << "Port :" << portNo << endl;
     }
 

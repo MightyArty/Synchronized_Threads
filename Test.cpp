@@ -1,6 +1,6 @@
 #include "doctest.h"
 #include "server.hpp"
-#include "iclient.hpp"
+#include "client.hpp"
 #include <pthread.h>
 
 #include <iostream>
@@ -46,7 +46,7 @@ int client()
 	struct sockaddr_in svrAdd;
 	struct hostent *server;
 
-	portNo = htons(3000);
+	portNo = htons(3003);
 
 	if ((portNo > 65535) || (portNo < 2000))
 	{
@@ -91,17 +91,32 @@ void *server(void *dummyPt)
 	system("./server");
 	return 0;
 }
+void *MultiPush(void *dummyPt)
+{
+	char reader[BUFFSIZE] = {0};
+	int sock = *((int *)dummyPt);
+	for (int i = 0; i < 100; i++)
+	{
+		bzero(reader, BUFFSIZE);
+		bzero(reader, BUFFSIZE);
+		write(sock, "PUSH c1", 7);
+		read(sock, reader, BUFFSIZE);
+		CHECK(strcmp(reader, "Pushed") == 0);
+	}
+	return 0;
+}
+
 /**
  * @brief Test for pushing into the stack
  */
 TEST_CASE("Good Input")
 {
-	pthread_t threadA[1];
+	pthread_t threadA[4];
 	int error = pthread_create(&threadA[0], NULL, server, NULL);
 	if (error != 0)
 		printf("\nThread can't be created :[%s]",
 			   strerror(error));
-	sleep(5);
+	sleep(3);
 	c1 = client();
 	sleep(1);
 	c2 = client();
@@ -129,7 +144,18 @@ TEST_CASE("Good Input")
 		write(c1, "COUNT", 5);
 		read(c1, r, BUFFSIZE);
 		CHECK(strcmp(r, "3") == 0);
+
+		pthread_create(&threadA[1], NULL, MultiPush, (void *)&c1);
+		pthread_create(&threadA[2], NULL, MultiPush, (void *)&c2);
+		pthread_create(&threadA[3], NULL, MultiPush, (void *)&c3);
 	}
+	for (int i = 1; i < 4; i++)
+	{
+		pthread_join(threadA[i], NULL);
+	}
+	write(c1, "COUNT", 5);
+	read(c1, r, BUFFSIZE);
+	CHECK(strcmp(r, "303") == 0);
 }
 /**
  * @brief Test for poping out of the stack
@@ -149,7 +175,7 @@ TEST_CASE("Good Input")
 
 		write(c1, "COUNT", 5);
 		read(c1, r, BUFFSIZE);
-		CHECK(strcmp(r, "4") == 0);
+		CHECK(strcmp(r, "304") == 0);
 
 		write(c1, "POP", 3);
 		read(c1, r, BUFFSIZE);
@@ -157,7 +183,7 @@ TEST_CASE("Good Input")
 
 		write(c1, "COUNT", 5);
 		read(c1, r, BUFFSIZE);
-		CHECK(strcmp(r, "3") == 0);
+		CHECK(strcmp(r, "303") == 0);
 	}
 }
 /**
@@ -177,7 +203,7 @@ TEST_CASE("Good Input")
 
 		write(c1, "COUNT", 5);
 		read(c1, r, BUFFSIZE);
-		CHECK(strcmp(r, "4") == 0);
+		CHECK(strcmp(r, "304") == 0);
 
 		write(c1, "TOP", 3);
 		read(c1, r, BUFFSIZE);
@@ -185,7 +211,7 @@ TEST_CASE("Good Input")
 
 		write(c1, "COUNT", 5);
 		read(c1, r, BUFFSIZE);
-		CHECK(strcmp(r, "4") == 0);
+		CHECK(strcmp(r, "304") == 0);
 	}
 }
 /**
@@ -205,7 +231,7 @@ TEST_CASE("Good input")
 
 		write(c1, "COUNT", 5);
 		read(c1, r, BUFFSIZE);
-		CHECK(strcmp(r, "4") == 0);
+		CHECK(strcmp(r, "304") == 0);
 
 		write(c1, "PUSH c1", 7);
 		read(c1, r, BUFFSIZE);
@@ -213,7 +239,7 @@ TEST_CASE("Good input")
 
 		write(c1, "COUNT", 5);
 		read(c1, r, BUFFSIZE);
-		CHECK(strcmp(r, "5") == 0);
+		CHECK(strcmp(r, "305") == 0);
 
 		write(c1, "POP", 3);
 		read(c1, r, BUFFSIZE);
@@ -221,7 +247,7 @@ TEST_CASE("Good input")
 
 		write(c1, "COUNT", 5);
 		read(c1, r, BUFFSIZE);
-		CHECK(strcmp(r, "4") == 0);
+		CHECK(strcmp(r, "304") == 0);
 	}
 }
 /**
@@ -239,23 +265,23 @@ TEST_CASE("Bad input")
 
 		write(c1, "pop", 5);
 		read(c1, r, BUFFSIZE);
-		CHECK(strcmp(r, "Invaild commands") == 0);
+		CHECK(strcmp(r, "(-1)") == 0);
 
 		write(c1, "push", 4);
 		read(c1, r, BUFFSIZE);
-		CHECK(strcmp(r, "Invaild commands") == 0);
+		CHECK(strcmp(r, "(-1)") == 0);
 
 		write(c1, "top", 3);
 		read(c1, r, BUFFSIZE);
-		CHECK(strcmp(r, "Invaild commands") == 0);
+		CHECK(strcmp(r, "(-1)") == 0);
 
 		write(c1, "fsf", 3);
 		read(c1, r, BUFFSIZE);
-		CHECK(strcmp(r, "Invaild commands") == 0);
+		CHECK(strcmp(r, "(-1)") == 0);
 
 		write(c1, "barak", 5);
 		read(c1, r, BUFFSIZE);
-		CHECK(strcmp(r, "Invaild commands") == 0);
+		CHECK(strcmp(r, "(-1)") == 0);
 	}
 }
 /**
@@ -271,15 +297,15 @@ TEST_CASE("Good input")
 		reset();
 
 		bzero(r, BUFFSIZE);
-		write(c1, "exit", 4);
+		write(c1, "EXIT", 4);
 		read(c1, r, BUFFSIZE);
 		CHECK(strcmp(r, "succ") == 0);
 
-		write(c2, "exit", 4);
+		write(c2, "EXIT", 4);
 		read(c2, r, BUFFSIZE);
 		CHECK(strcmp(r, "succ") == 0);
 
-		write(c3, "exit", 4);
+		write(c3, "EXIT", 4);
 		read(c3, r, BUFFSIZE);
 		CHECK(strcmp(r, "succ") == 0);
 
